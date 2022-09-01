@@ -1,0 +1,59 @@
+##########put this file together with meta/train/test
+import os
+import numpy as np
+from cv2 import imwrite as imsave
+
+#create path
+def makfile(path):
+    isExists = os.path.exists(path)
+    if not isExists:
+        os.makedirs(path)
+
+#unpickle data
+def unpickle(file):
+    import _pickle
+    with open(file, 'rb') as fo:
+        dict = _pickle.load(fo, encoding='bytes')
+    return dict
+
+#read data and save as png
+def ReadSaveData(adata, bdata, train=1):
+    for aa, bb, c, d in zip(bdata[b'filenames'], bdata[b'fine_labels'], bdata[b'coarse_labels'], bdata[b'data']):
+        print(adata[b'fine_label_names'][bb], adata[b'coarse_label_names'][c])
+        if train:
+            SavePath = 'traindata'
+        else:
+            SavePath = 'testdata'
+
+        coarse_label_names = adata[b'coarse_label_names'][c]
+        fine_label_names = adata[b'fine_label_names'][bb]
+        
+        path1 = os.path.join(SavePath, str(coarse_label_names, 'utf-8'))
+        path2 = os.path.join(path1, str(fine_label_names, 'utf-8'))
+        path2 = path2 +"/"
+        #print(path2)
+        makfile(path2)
+        path3 = path2 + str(aa, 'utf-8')
+        #path3 = os.path.join(path2, str(aa, 'utf-8'))
+        #makfile(path3)
+        print(path3)
+
+        
+        picdata1 = np.reshape(d, (3, 32, 32))
+        picdata = np.transpose(picdata1, (1, 2, 0))
+        imsave(path3, picdata)
+
+
+
+metapath = 'meta'
+testpath = 'test'
+trainpath = 'train'
+
+
+DirList = unpickle(metapath)
+TestData = unpickle(testpath)
+TrainData = unpickle(trainpath)
+##Test set
+ReadSaveData(DirList, TestData, train=0)
+##Train set
+ReadSaveData(DirList, TrainData, train=1)
